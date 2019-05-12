@@ -1,7 +1,7 @@
 import { complianceTestsAsync } from "@keeveestore/test-suite";
-import { StoreAsync } from "../src/async";
+import { StoreAsync } from "../src";
 
-complianceTestsAsync(new StoreAsync<string, number>({ connection: "http://localhost:5984", database: "alice" }), {
+complianceTestsAsync(() => StoreAsync.new<string, number>({ connection: "http://localhost:5984", database: "alice" }), {
 	one: 1,
 	two: 2,
 	// tslint:disable-next-line: object-literal-sort-keys
