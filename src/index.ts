@@ -9,10 +9,10 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 			await store.create(opts.database);
 		} catch (error) {} // tslint:disable-line: no-empty
 
-		return new StoreAsync<K, T>(store);
+		return new StoreAsync<K, T>(store, opts.database);
 	}
 
-	private constructor(private readonly store) {}
+	private constructor(private readonly store, private readonly database: string) {}
 
 	public async all(): Promise<Array<[K, T]>> {
 		try {
@@ -156,6 +156,6 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 	}
 
 	private get db() {
-		return this.store.use(this.opts.database);
+		return this.store.use(this.database);
 	}
 }
