@@ -2,24 +2,34 @@ import { IKeyValueStoreAsync } from "@konceiver/kv";
 import nano from "nano";
 
 export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
-	public static async new<K, T>(opts: { connection: string; database: string }): Promise<StoreAsync<K, T>> {
+	public static async new<K, T>(opts: {
+		connection: string;
+		database: string;
+	}): Promise<StoreAsync<K, T>> {
 		const store = nano(opts.connection).db;
 
 		try {
 			await store.create(opts.database);
-		} catch (error) {} // tslint:disable-line: no-empty
+		} catch {
+			//
+		}
 
 		return new StoreAsync<K, T>(store, opts.database);
 	}
 
-	private constructor(private readonly store, private readonly database: string) {}
+	private constructor(
+		private readonly store,
+		private readonly database: string
+	) {}
 
 	public async all(): Promise<Array<[K, T]>> {
 		try {
 			const { rows } = await this.db.list();
 
-			return Promise.all(rows.map(async row => [row.id, await this.get(row.id)]));
-		} catch (error) {
+			return Promise.all(
+				rows.map(async (row) => [row.id, await this.get(row.id)])
+			);
+		} catch {
 			return [];
 		}
 	}
@@ -28,8 +38,8 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 		try {
 			const { rows } = await this.db.list();
 
-			return rows.map(row => row.id);
-		} catch (error) {
+			return rows.map((row) => row.id);
+		} catch {
 			return [];
 		}
 	}
@@ -38,8 +48,8 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 		try {
 			const { rows } = await this.db.list();
 
-			return Promise.all(rows.map(async row => this.get(row.id)));
-		} catch (error) {
+			return Promise.all(rows.map(async (row) => this.get(row.id)));
+		} catch {
 			return [];
 		}
 	}
@@ -49,7 +59,7 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 			const { value } = await this.db.get(key);
 
 			return value;
-		} catch (error) {
+		} catch {
 			return undefined;
 		}
 	}
@@ -81,7 +91,7 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 				_rev: (await this.db.get(key))._rev,
 				value,
 			});
-		} catch (error) {
+		} catch {
 			await this.db.insert({ _id: key, value });
 		}
 
@@ -89,13 +99,15 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 	}
 
 	public async putMany(values: Array<[K, T]>): Promise<boolean[]> {
-		return Promise.all(values.map(async (value: [K, T]) => this.put(value[0], value[1])));
+		return Promise.all(
+			values.map(async (value: [K, T]) => this.put(value[0], value[1]))
+		);
 	}
 
 	public async has(key: K): Promise<boolean> {
 		try {
 			return (await this.get(key)) !== undefined;
-		} catch (error) {
+		} catch {
 			return false;
 		}
 	}
@@ -121,8 +133,9 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 			const doc = await this.db.get(key);
 
 			await this.db.destroy(doc._id, doc._rev);
-			// tslint:disable-next-line: no-empty
-		} catch (error) {}
+		} catch {
+			//
+		}
 
 		return this.missing(key);
 	}
@@ -142,7 +155,7 @@ export class StoreAsync<K, T> implements IKeyValueStoreAsync<K, T> {
 			const { doc_count } = await this.db.info();
 
 			return doc_count;
-		} catch (error) {
+		} catch {
 			return 0;
 		}
 	}
